@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: db-init
-        image: ahmedalaa14/todo-db-img:latest
+        image: ahmedalaa14/todo-db:latest
         env:
           - name: DB_HOST
             value: db-service
