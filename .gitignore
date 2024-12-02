@@ -1,5 +1,5 @@
 venv
 .terraform*
 terraform.tfstate*
-*.tfvars
+terraform/terraform.tfvars
 .history
