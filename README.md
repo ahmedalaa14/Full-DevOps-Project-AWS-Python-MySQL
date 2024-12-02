@@ -97,3 +97,82 @@ This will build the infrastructure, Deploy Monitoring Tools, and run some comman
 9.  Create Namespace and Deploy the application and the Job
 10. Reveal the LoadBalancer URL for the application, alertmanager, prometheus and grafana
 
+## 7. CI/CD Workflows
+
+This project is equipped with GitHub Actions workflows to automate the Continuous Integration (CI) and Continuous Deployment (CD) processes.
+
+### Continuous Integration Workflow
+
+The CI workflow is triggered on pushes to the `main` branch. It performs the following tasks:
+
+- Checks out the code from the repository.
+- Configures AWS credentials using secrets stored in the GitHub repository.
+- Logs in to Amazon ECR.
+- Builds the Docker image for the Python app.
+- Builds the Docker image for MySQL Kubernetes job.
+- Tags the images and pushes each one to the it's Amazon ECR repository.
+
+### Continuous Deployment Workflow
+
+The CD workflow is triggered upon the successful completion of the CI workflow. It performs the following tasks:
+
+- Checks out the code from the repository.
+- Configures AWS credentials using secrets stored in the GitHub repository.
+- Sets up `kubectl` with the required Kubernetes version.
+- Deploys the Kubernetes manifests found in the `k8s` directory to the EKS cluster.
+
+### GitHub Actions Secrets:
+
+The following secrets need to be set in your GitHub repository for the workflows to function correctly:
+
+- `AWS_ACCESS_KEY_ID`: Your AWS Access Key ID.
+- `AWS_SECRET_ACCESS_KEY`: Your AWS Secret Access Key.
+- `KUBECONFIG_SECRET`: Your Kubernetes config file encoded in base64.
+
+#### 1. Setting Up GitHub Secrets for AWS
+
+Before using the GitHub Actions workflows, you need to set up the AWS credentials as secrets in your GitHub repository. The included `github_secrets.sh` script automates the process of adding your AWS credentials to GitHub Secrets, which are then used by the workflows. To use this script:
+
+1. Ensure you have the GitHub CLI (`gh`) installed and authenticated.
+2. Run the script with the following command:
+
+   ```bash
+   ./github_secrets.sh
+   ```
+
+This script will:
+
+- Extract your AWS Access Key ID and Secret Access Key from your local AWS configuration.
+- Use the GitHub CLI to set these as secrets in your GitHub repository.
+
+**Note**: It's crucial to handle AWS credentials securely. The provided script is for demonstration purposes, and in a production environment, you should use a secure method to inject these credentials into your CI/CD pipeline.
+
+These secrets are consumed by the GitHub Actions workflows to access your AWS resources and manage your Kubernetes cluster.
+
+#### 2. Adding KUBECONFIG to GitHub Secrets
+
+For the Continuous Deployment workflow to function properly, it requires access to your Kubernetes cluster. This access is granted through the `KUBECONFIG` file. You need to add this file manually to your GitHub repository's secrets to ensure secure and proper deployment.
+
+To add your `KUBECONFIG` to GitHub Secrets, follow these steps:
+
+1. Encode your `KUBECONFIG` file to a base64 string:
+
+   ```bash
+   cat ~/.kube/config | base64
+   ```
+
+2. Copy the encoded output to your clipboard.
+
+3. Navigate to your GitHub repository on the web.
+
+4. Go to `Settings` > `Secrets` > `New repository secret`.
+
+5. Name the secret `KUBECONFIG_SECRET`.
+
+6. Paste the base64-encoded `KUBECONFIG` data into the secret's value field.
+
+7. Click `Add secret` to save the new secret.
+
+This `KUBECONFIG_SECRET` is then used by the CD workflow to authenticate with your Kubernetes cluster and apply the required configurations.
+
+
