@@ -1,6 +1,6 @@
 #!/bim/bash
 
-d terraform && \
+cd terraform && \
 terraform init 
 terraform apply -auto-approve
 cd ..
